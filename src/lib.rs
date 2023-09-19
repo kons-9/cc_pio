@@ -3,7 +3,7 @@ use serde_json::{self, Value};
 use std::path::PathBuf;
 use std::process::Command;
 
-trait PioExtention {
+pub trait PioExtention {
     fn pio(&mut self, pio_path: Option<PathBuf>, cpp: bool) -> &mut Self;
     fn search_pio(pio_path: Option<PathBuf>) -> Result<Command, std::io::Error> {
         let mut command = if let Some(pio_path) = pio_path {
@@ -73,8 +73,10 @@ impl PioExtention for cc::Build {
             }
         }
         // add includes
-        for include in includes.as_array().unwrap() {
-            self.include(include.as_str().unwrap());
+        for include in includes.as_object().unwrap().keys() {
+            for include_dir in includes[include].as_array().unwrap() {
+                self.include(include_dir.as_str().unwrap());
+            }
         }
 
         if cpp {
